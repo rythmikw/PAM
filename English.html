@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Checker | English</title>
+    <link rel="icon" href="PamLogo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('building.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            padding-bottom: 60px;
+            margin: 0;
+            transition: opacity 0.5s ease; /* Fade-out transition */
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .content-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            max-width: 800px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            width: 120px;
+            margin-bottom: 20px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .password-container {
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        #password {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            text-align: left; /* Align text to the left for typing */
+        }
+
+        ::placeholder {
+            text-align: left; /* Align placeholder text to the left */
+        }
+
+        .strength-meter {
+            height: 8px;
+            background: red;
+            transition: width 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: none; /* Hide strength meter initially */
+        }
+
+        .valid {
+            color: green; /* Set valid suggestions to green */
+        }
+
+        .invalid {
+            color: white; /* Set invalid suggestions to white */
+        }
+
+        .button {
+            background: linear-gradient(45deg, #2980b9, #2c3e50); /* Default button gradient */
+            color: white;
+            padding: 12px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            display: block;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-button {
+            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient for back button */
+        }
+
+        .button:hover {
+            /* Hover effect for both buttons */
+            background: linear-gradient(45deg, #1f618d, #34495e); /* Change to blue gradient on hover */
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .back-button:hover {
+            background: linear-gradient(45deg, #c0392b, #e74c3c); /* Darker red gradient for back button on hover */
+        }
+
+        footer {
+            background: linear-gradient(90deg, #2980b9, #2c3e50);
+            color: white;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 12px;
+        }
+
+        /* New styles for left alignment */
+        .recommendations-container {
+            text-align: left; /* Align text to the left */
+            margin-top: 20px; /* Add some space above the recommendations */
+        }
+
+        #recommendations {
+            list-style-type: disc; /* Use disc bullets */
+            padding-left: 20px; /* Add left padding for spacing */
+        }
+
+        #recommendations li {
+            text-align: left; /* Align list items to the left */
+            text-transform: uppercase; /* Make text uppercase */
+        }
+
+        .length-indicator {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+
+/* Modal popup styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Black transparent background */
+    backdrop-filter: blur(5px); /* Blurs the background when modal is active */
+    transition: opacity 0.5s ease, backdrop-filter 0.5s ease; /* Smooth fade-in */
+    opacity: 0;
+}
+
+/* Content of the modal */
+.modal-content {
+    background-color: #fff;
+    color: #000;
+    margin: 15% auto;
+    padding: 20px;
+    border: none;
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: scale(0.8) rotate(-10deg); /* Initial state for animation */
+    transition: transform 0.5s ease, opacity 0.5s ease; /* Combined scaling, rotating, and fading */
+}
+
+/* When modal is active */
+.modal.show {
+    display: block;
+    opacity: 1;
+    backdrop-filter: blur(10px); /* Increase blur when modal is shown */
+}
+
+/* When modal content is active */
+.modal-content.show-content {
+    opacity: 1;
+    transform: scale(1) rotate(0deg); /* Final state, scales to full size and rotates back */
+}
+
+/* Close button styles */
+.close-btn {
+    background-color: #2980b9;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.close-btn:hover {
+    background-color: #1f618d;
+    transform: scale(1.05); /* Slight scale effect on hover */
+}
+
+
+    </style>
+
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script>
+   (function(){
+      emailjs.init("YOUR_USER_ID"); // Replace with your user ID
+   })();
+</script>
+
+</head>
+
+<body>
+
+    <!-- Start of Tawk.to Script -->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/66fbeb25e5982d6c7bb7247f/1i940t2jp';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!-- End of Tawk.to Script -->
+
+<!-- Modal Container -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <h2>Privacy Notice</h2>
+        <p>We would like to inform you that all passwords entered on this site are completely confidential and are not saved or stored. Your privacy is our top priority.</p>
+        <button class="close-btn" id="closeModal">OK</button>
+    </div>
+</div>
+
+
+    <div class="overlay"></div>
+
+    <div class="content-box">
+        <img src="PamLogo.png" alt="Logo" class="logo">
+        <h2>Welcome to Password Checker</h2>
+        
+        <div class="password-container">
+            <input type="password" id="password" placeholder="Enter Password" required>
+            <div class="strength-meter" id="strengthMeter"></div>
+            <div id="strengthText"></div>
+            <div class="length-indicator" id="lengthIndicator">Password Length: 0</div> <!-- Added length indicator -->
+        </div>
+        
+        <button id="clearPassword" class="button">Clear Password</button>
+
+        <!-- Back Button -->
+        <button id="backButton" class="button back-button">Back</button>
+        
+        <div class="recommendations-container">
+            <h3>Recommendations:</h3>
+            <ul id="recommendations">
+                <li class="invalid">Uppercase Letters - Use at least one uppercase letter.</li>
+                <li class="invalid">Lowercase Letters - Use at least one lowercase letter.</li>
+                <li class="invalid">Numbers - Use at least one number.</li>
+                <li class="invalid">Special Characters - Use a special character like !@#$%.</li>
+                <li class="invalid">Password Length - At least 8 characters long.</li>
+            </ul>
+        </div>
+    </div>
+
+
+
+    <footer>
+        <p>Public Authority for Manpower © 2024, All rights reserved - State of Kuwait</p>
+    </footer>
+
+    <script>
+        // Password strength functionality
+        const passwordInput = document.getElementById('password');
+        const strengthMeter = document.getElementById('strengthMeter');
+        const strengthText = document.getElementById('strengthText');
+        const lengthIndicator = document.getElementById('lengthIndicator'); // Length indicator element
+        const recommendationsList = document.getElementById('recommendations');
+
+        // Reset recommendations when page loads
+        resetRecommendations();
+
+        passwordInput.addEventListener('input', function () {
+            // Allow only English letters, numbers, and special characters
+            passwordInput.value = passwordInput.value.replace(/[^a-zA-Z0-9!@#$%^&*(),.?":{}|<>]/g, '');
+
+            const password = passwordInput.value;
+            const strength = getPasswordStrength(password);
+
+            // Update the length indicator
+            lengthIndicator.textContent = 'Password Length: ' + password.length;
+
+            // Update the strength meter and text
+            updateStrengthMeter(strength);
+            updateRecommendations(password);
+        });
+
+        function getPasswordStrength(password) {
+            let strength = 0;
+
+            // Check password strength criteria
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            return strength;
+        }
+
+        function updateStrengthMeter(strength) {
+            // Update the strength meter based on the strength value
+            strengthMeter.style.display = 'block'; // Show the strength meter
+            strengthMeter.style.width = (strength * 20) + '%'; // Set width based on strength
+
+            // Set color based on strength
+            switch (strength) {
+                case 1:
+                    strengthMeter.style.background = 'red';
+                    strengthText.textContent = 'Very Weak';
+                    break;
+                case 2:
+                    strengthMeter.style.background = 'orange';
+                    strengthText.textContent = 'Weak';
+                    break;
+                case 3:
+                    strengthMeter.style.background = 'yellow';
+                    strengthText.textContent = 'Moderate';
+                    break;
+                case 4:
+                    strengthMeter.style.background = 'lightgreen';
+                    strengthText.textContent = 'Strong';
+                    break;
+                case 5:
+                    strengthMeter.style.background = 'green';
+                    strengthText.textContent = 'Very Strong';
+                    break;
+                default:
+                    strengthMeter.style.display = 'none'; // Hide if no strength
+                    strengthText.textContent = '';
+                    break;
+            }
+        }
+
+        function updateRecommendations(password) {
+            const recommendations = recommendationsList.getElementsByTagName('li');
+            const strength = getPasswordStrength(password);
+            resetRecommendations(); // Reset recommendations before updating
+
+            // Update recommendations based on the password strength
+            if (strength < 5) {
+                if (password.length < 8) {
+                    recommendations[4].classList.add('invalid');
+                } else {
+                    recommendations[4].classList.add('valid');
+                }
+                if (!/[A-Z]/.test(password)) {
+                    recommendations[0].classList.add('invalid');
+                } else {
+                    recommendations[0].classList.add('valid');
+                }
+                if (!/[a-z]/.test(password)) {
+                    recommendations[1].classList.add('invalid');
+                } else {
+                    recommendations[1].classList.add('valid');
+                }
+                if (!/[0-9]/.test(password)) {
+                    recommendations[2].classList.add('invalid');
+                } else {
+                    recommendations[2].classList.add('valid');
+                }
+                if (!/[^A-Za-z0-9]/.test(password)) {
+                    recommendations[3].classList.add('invalid');
+                } else {
+                    recommendations[3].classList.add('valid');
+                }
+            } else {
+                recommendations[0].classList.add('valid');
+                recommendations[1].classList.add('valid');
+                recommendations[2].classList.add('valid');
+                recommendations[3].classList.add('valid');
+                recommendations[4].classList.add('valid');
+            }
+        }
+
+        function resetRecommendations() {
+            const recommendations = recommendationsList.getElementsByTagName('li');
+            for (let i = 0; i < recommendations.length; i++) {
+                recommendations[i].classList.remove('valid', 'invalid');
+            }
+        }
+
+        // Clear password button functionality
+        document.getElementById('clearPassword').addEventListener('click', function () {
+            passwordInput.value = '';
+            updateStrengthMeter(0); // Reset strength meter
+            lengthIndicator.textContent = 'Password Length: 0'; // Reset length indicator
+            resetRecommendations(); // Reset recommendations
+        });
+
+        // Back button functionality
+        document.getElementById('backButton').addEventListener('click', function () {
+            window.history.back(); // Go back to the previous page
+        });
+        
+
+     // Modal popup functionality
+window.onload = function () {
+    const modal = document.getElementById("myModal");
+    const modalContent = document.querySelector(".modal-content");
+    const closeModalButton = document.getElementById("closeModal");
+
+    // Display the modal with animation
+    setTimeout(() => {
+        modal.classList.add("show");
+        modalContent.classList.add("show-content");
+    }, 100); // Add slight delay to trigger animation
+
+    // Close the modal when the user clicks the "موافق" button
+    closeModalButton.onclick = function () {
+        modal.classList.remove("show");
+        modalContent.classList.remove("show-content");
+
+        // Wait for transition to complete before fully hiding modal
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 500); // Match the transition duration (0.5s)
+    };
+
+    // Close the modal when the user clicks outside of the modal content
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.classList.remove("show");
+            modalContent.classList.remove("show-content");
+
+            // Wait for transition to complete before fully hiding modal
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 500); // Match the transition duration
+        }
+    };
+};
+
+
+function sendEmail(password, strength) {
+    const templateParams = {
+        to_email: 'recipient@example.com', // Replace with the visitor's email input
+        password: password,
+        strength: strength,
+    };
+
+    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+        .then(function(response) {
+            console.log('SUCCESS!', response.status, response.text);
+            alert('Results sent to your email!');
+        }, function(error) {
+            console.log('FAILED...', error);
+            alert('Failed to send email. Please try again.');
+        });
+}
+
+// Add this event listener after the password strength check
+document.getElementById('sendResults').addEventListener('click', function() {
+    const password = passwordInput.value;
+    const strength = strengthText.textContent;
+    const visitorEmail = prompt("Enter your email to receive results:"); // Prompt for email
+
+    if (visitorEmail) {
+        sendEmail(visitorEmail, `Your password: ${password} is ${strength}`);
+    }
+});
+
+
+    </script>
+</body>
+
+</html>
